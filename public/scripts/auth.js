@@ -31,7 +31,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const userDocSnap = await getDoc(userDocRef);
 
     if (userDocSnap.exists() && userDocSnap.data().isAdmin === true) {
-      window.location.href = "./dashboard.html";
+      window.location.href = "/pages/dashboard.html";
     } else {
       errorEl.textContent = "No tenés permisos para acceder.";
     }
