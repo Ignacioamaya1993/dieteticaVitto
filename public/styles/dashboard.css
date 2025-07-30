@@ -4,40 +4,78 @@ body {
   background: #f4f7fa;
   color: #333;
 }
+
 .container {
   display: flex;
   min-height: 100vh;
 }
+
 /* Sidebar categorías */
 .sidebar {
   background: #fff;
-  width: 220px;
+  width: 250px;
   border-right: 1px solid #ddd;
   padding: 1rem;
   box-shadow: 2px 0 5px rgb(0 0 0 / 0.05);
 }
+
 .sidebar h2 {
   font-size: 1.2rem;
   margin-bottom: 1rem;
 }
+
+/* Lista categorías */
 .category-list {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
+
+/* Cada item categoría */
 .category-list li {
-  padding: 0.5rem 0.7rem;
+  position: relative;
+  padding: 0.6rem 2.2rem 0.6rem 0.8rem; /* espacio para la X */
+  margin-bottom: 0.3rem;
   cursor: pointer;
-  border-radius: 4px;
-  user-select: none;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #333;
 }
+
 .category-list li:hover,
 .category-list li.active {
-  background-color: #59cfb6;
-  color: white;
-  font-weight: bold;
+  background-color: #e6f0ff;
+  color: #0a66c2;
 }
+
+/* X para eliminar categoría */
+.category-list li .btn-eliminar-categoria {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-weight: bold;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
+}
+
+.category-list li:hover .btn-eliminar-categoria {
+  opacity: 1;
+  color: #d93025; /* rojo para alertar */
+}
+
 /* Main content */
 .main-content {
   flex-grow: 1;
@@ -45,6 +83,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 /* Buscador, orden y botón agregar */
 .search-sort {
   display: flex;
@@ -52,6 +91,7 @@ body {
   margin-bottom: 1rem;
   gap: 1rem;
 }
+
 .search-sort input[type="search"] {
   flex-grow: 1;
   padding: 0.5rem 1rem;
@@ -60,10 +100,12 @@ body {
   border: 2px solid #ccc;
   transition: border-color 0.3s ease;
 }
+
 .search-sort input[type="search"]:focus {
   border-color: #59cfb6;
   outline: none;
 }
+
 .search-sort select {
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -72,11 +114,13 @@ body {
   cursor: pointer;
   transition: border-color 0.3s ease;
 }
+
 .search-sort select:hover,
 .search-sort select:focus {
   border-color: #59cfb6;
   outline: none;
 }
+
 .btn-add-product {
   background-color: #59cfb6;
   border: none;
@@ -89,9 +133,13 @@ body {
   transition: background-color 0.3s ease;
   white-space: nowrap;
 }
+
 .btn-add-product:hover {
   background-color: #59cfb6;
 }
+
+
+
 /* Tabla */
 table {
   width: 100%;
@@ -103,39 +151,108 @@ table {
   overflow: hidden;
   font-size: 0.95rem;
 }
+
 thead tr {
   background: #59cfb6;
   color: white;
   text-align: left;
 }
+
 thead th {
   padding: 12px 16px;
   user-select: none;
   cursor: pointer;
   font-weight: 600;
 }
+
+/* Botón agregar categoría */
+.btn-agregar-categoria {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.4rem 1rem;
+  background-color: #0a66c2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 90%;
+  max-width: 260px;
+  text-align: center;
+}
+
+.btn-agregar-categoria:hover {
+  background-color: #004a99;
+}
+
+#paginationControls {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+#paginationControls button {
+  padding: 6px 12px;
+  border: 1.5px solid #59cfb6;
+  background-color: white;
+  color: #0a66c2;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#paginationControls button:hover:not(:disabled) {
+  background-color: #59cfb6;
+  color: white;
+}
+
+#paginationControls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#paginationControls button[disabled] {
+  cursor: not-allowed;
+}
+
+#paginationControls button.active,
+#paginationControls button[aria-current="page"] {
+  background-color: #0a66c2;
+  color: white;
+  font-weight: 700;
+  cursor: default;
+}
+
 tbody tr {
   transition: background-color 0.2s ease;
   cursor: default;
 }
+
 tbody tr:hover {
   background-color: #f0f4ff;
 }
+
 tbody td {
   padding: 12px 16px;
   vertical-align: middle;
 }
+
 tbody td[contenteditable="true"] {
   background-color: #fcfcfc;
   border-radius: 6px;
   border: 1px solid transparent;
   transition: border-color 0.2s ease;
 }
+
 tbody td[contenteditable="true"]:focus {
   border-color: #59cfb6;
   outline: none;
   background-color: white;
 }
+
 .actions button {
   margin-right: 6px;
   background-color: #59cfb6;
@@ -147,12 +264,15 @@ tbody td[contenteditable="true"]:focus {
   font-weight: 600;
   transition: background-color 0.3s ease;
 }
+
 .actions button.delete {
   background-color: #e74c3c;
 }
+
 .actions button:hover {
   filter: brightness(1.15);
 }
+
 .actions button.delete:hover {
   filter: brightness(0.85);
 }
@@ -173,9 +293,11 @@ tbody td[contenteditable="true"]:focus {
   justify-content: center;
   z-index: 9999; /* mantenemos z-index alto para modal */
 }
+
 .modal.hidden {
   display: none;
 }
+
 .modal-content {
   background: white;
   padding: 1.5rem 2rem;
@@ -188,12 +310,14 @@ tbody td[contenteditable="true"]:focus {
   flex-direction: column;
   gap: 1rem;
 }
+
 .modal-content h3 {
   margin: 0;
   font-weight: 700;
   color: #59cfb6;
   text-align: center;
 }
+
 .modal-content select,
 .modal-content input {
   padding: 0.6rem 1rem;
@@ -204,11 +328,13 @@ tbody td[contenteditable="true"]:focus {
   width: 100%;
   box-sizing: border-box;
 }
+
 .modal-content select:focus,
 .modal-content input:focus {
   border-color: #59cfb6;
   outline: none;
 }
+
 .modal-content button {
   background-color: #59cfb6;
   color: white;
@@ -220,9 +346,11 @@ tbody td[contenteditable="true"]:focus {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
 .modal-content button:hover {
   background-color: #59cfb6;
 }
+
 .close {
   position: absolute;
   top: 12px;
@@ -233,6 +361,7 @@ tbody td[contenteditable="true"]:focus {
   color: #59cfb6;
   user-select: none;
 }
+
 .close:hover {
   color: #59cfb6;
 }
@@ -247,18 +376,22 @@ tbody td[contenteditable="true"]:focus {
   .container {
     flex-direction: column;
   }
+
   .sidebar {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid #ddd;
   }
+
   .main-content {
     padding: 1rem;
   }
+
   .search-sort {
     flex-direction: column;
     gap: 0.5rem;
   }
+
   .btn-add-product {
     width: 100%;
   }
