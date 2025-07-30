@@ -1,81 +1,113 @@
-/* Reset básico */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
 body, html {
   height: 100%;
-  background: linear-gradient(135deg, #6b73ff, #000dff);
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #333;
+  color: #fff;
 }
 
 .login-container {
-  background: #fff;
   padding: 2.5rem 3rem;
-  border-radius: 12px;
-  width: 320px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+  width: 400px;
+  height: 370px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
   text-align: center;
 }
 
 .login-container h1 {
-  margin-bottom: 1.5rem;
-  color: #1a1a1a;
-  font-weight: 700;
-  font-size: 1.75rem;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  color: #0c0101;
 }
 
 .login-container form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
+  text-align: left;
+}
+
+.login-container label {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #110202;
+}
+
+.required {
+  color: #ff4b4b;
 }
 
 .login-container input[type="email"],
 .login-container input[type="password"] {
-  padding: 0.75rem 1rem;
+  padding: 0.8rem;
   font-size: 1rem;
-  border: 2px solid #ddd;
+  border: 1px solid #888;
   border-radius: 8px;
-  transition: border-color 0.3s ease;
+  background-color: #fff;
+  color: #0f0404;
 }
 
-.login-container input[type="email"]:focus,
-.login-container input[type="password"]:focus {
-  border-color: #000dff;
-  outline: none;
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.login-container button {
-  background-color: #000dff;
-  color: white;
-  padding: 0.85rem;
+.password-wrapper input {
+  flex-grow: 1;
+}
+
+#togglePassword {
+  position: absolute;
+  right: 10px;
+  background: none;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  color: #888;
 }
 
-.login-container button:hover {
-  background-color: #5a64ff;
+#togglePassword:hover {
+  color: #1a0808;
 }
 
-.error-msg {
+.login-container button[type="submit"] {
+  background-color: #173b84;
+  color: #fff;
+  border: none;
+  padding: 0.9rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.login-container button[type="submit"]:hover {
+  background-color: #295bcc;
+}
+
+.error-msg, .success-msg {
+  text-align: center;
   margin-top: 1rem;
-  color: #e74c3c;
   font-weight: 600;
-  min-height: 1.2em; /* para evitar salto cuando aparece */
+  font-size: 0.95rem;
+  min-height: 1.2em;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* Responsive */
+.error-msg.visible {
+  color: #ff4b4b;
+  opacity: 1;
+}
+
+.success-msg.visible {
+  color: #2ecc71;
+  opacity: 1;
+}
+
 @media (max-width: 400px) {
   .login-container {
     width: 90%;
