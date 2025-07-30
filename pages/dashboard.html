@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Productos - Tabla Editable</title>
+  <link rel="stylesheet" href="../styles/dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>Categorías</h2>
+      <ul class="category-list" id="categoryList">
+        <!-- Las categorías se cargarán dinámicamente -->
+      </ul>
+    </aside>
+
+    <section class="main-content">
+      <div class="search-sort">
+        <input type="search" id="searchInput" placeholder="Buscar por código o nombre..." />
+        <select id="sortSelect" title="Ordenar">
+          <option value="nombre-asc">Nombre ↑</option>
+          <option value="nombre-desc">Nombre ↓</option>
+          <option value="precio-asc">Precio ↑</option>
+          <option value="precio-desc">Precio ↓</option>
+          <option value="codigo-asc">Código A → Z</option>
+          <option value="codigo-desc">Código Z → A</option>
+        </select>
+        <button id="addProductBtn" class="btn-add-product" title="Agregar nuevo producto">
+          ➕ Nuevo Producto
+        </button>
+      </div>
+
+      <button id="btnImportarExcel">Importar productos desde Excel</button>
+
+        <div id="modalImportarExcel" style="display:none;">
+        <button id="cerrarImportarExcel">Cerrar</button>
+        <select id="categoriaImportarExcel"></select>
+        <input type="file" id="subirArchivoExcel" accept=".xlsx,.xls" />
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0;">
+        <label>Mostrar:
+            <select id="itemsPerPageSelect">
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            </select>
+            productos por página
+        </label>
+        <div id="paginationControls"></div>
+        </div>
+
+      <table id="productosTable">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Productos cargados aquí -->
+          <tr><td colspan="5" style="text-align:center; font-style: italic; color: #666;">Seleccione una categoría para ver productos</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Modal para agregar/editar productos -->
+  <div id="productModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeModalBtn" class="close">&times;</span>
+      <h3>Nuevo producto</h3>
+      <select id="modalCategoriaSelect" required>
+        <option value="">Seleccioná una categoría</option>
+      </select>
+      <input type="text" id="modalCodigo" placeholder="Código" />
+      <input type="text" id="modalNombre" placeholder="Nombre" />
+      <input type="number" id="modalPrecio" placeholder="Precio" min="0" step="0.01" />
+      <input type="number" id="modalStock" placeholder="Stock" min="0" step="1" />
+      <button id="modalGuardarBtn">Guardar</button>
+    </div>
+  </div>
+
+  <script type="module" src="../scripts/dashboard.js"></script>
+</body>
+</html>
