@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../styles/dashboard.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="../styles/excelImport.css" />
 
 </head>
 <body>
@@ -34,13 +35,27 @@
         </button>
       </div>
 
-      <button id="btnImportarExcel">Importar productos desde Excel</button>
+<!-- Botón para abrir el modal -->
+    <div class="excel-buttons">
+      <button id="btnImportarExcel" class="btn-small">📥 Importar Excel</button>
+      <button id="btnExportarExcel" class="btn-small">📤 Exportar Excel</button>
+    </div>
 
-        <div id="modalImportarExcel" style="display:none;">
-        <button id="cerrarImportarExcel">Cerrar</button>
+    <!-- Modal moderno para importar Excel -->
+    <div id="modalImportarExcel">
+      <div class="modal-content">
+        <span id="cerrarImportarExcel">&times;</span>
+        <h2>Importar productos desde Excel</h2>
+
+        <label for="categoriaImportarExcel">Seleccionar categoría:</label>
         <select id="categoriaImportarExcel"></select>
-        <input type="file" id="subirArchivoExcel" accept=".xlsx,.xls" />
-        </div>
+
+        <label for="subirArchivoExcel">Seleccionar archivo:</label>
+        <input type="file" id="subirArchivoExcel" accept=".xls,.xlsx" />
+
+        <p style="font-size: 13px; color: #666; margin-top: 8px;">El archivo debe tener columnas: Código | Nombre | Precio | Stock</p>
+      </div>
+    </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0;">
         <label>Mostrar:

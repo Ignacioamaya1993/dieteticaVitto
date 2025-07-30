@@ -1,0 +1,130 @@
+/* Fondo atenuado del modal */
+#modalImportarExcel {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro semitransparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contenedor del contenido del modal */
+#modalImportarExcel .modal-content {
+  background-color: #fff;
+  padding: 30px 25px;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease-out;
+  position: relative;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Animación de entrada */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Botón de cerrar (X) */
+#cerrarImportarExcel {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 22px;
+  cursor: pointer;
+  color: #777;
+}
+
+#cerrarImportarExcel:hover {
+  color: #000;
+}
+
+/* Título del modal */
+#modalImportarExcel h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+/* Select de categorías */
+#categoriaImportarExcel {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+/* Input de archivo */
+#subirArchivoExcel {
+  width: 100%;
+  padding: 8px;
+  border: 1px dashed #aaa;
+  border-radius: 6px;
+  background-color: #fafafa;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Botón que abre el modal */
+#btnImportarExcel {
+  padding: 10px 18px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  background-color: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#btnImportarExcel:hover {
+  background-color: #2563eb;
+}
+
+.excel-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-small:hover {
+  background-color: #1565c0;
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+  #modalImportarExcel .modal-content {
+    padding: 20px 15px;
+  }
+
+  #btnImportarExcel {
+    width: 100%;
+  }
+}
