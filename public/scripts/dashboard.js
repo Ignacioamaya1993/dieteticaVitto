@@ -320,7 +320,7 @@ async function cargarProductos() {
     return;
   }
 
-  if (categoriaActual === "null") {
+  if (categoriaActual === "todos") {
     // Cargar todos los productos de todas las categorías
     const catSnap = await getDocs(collection(db, "categorias"));
     let todosProductos = [];
