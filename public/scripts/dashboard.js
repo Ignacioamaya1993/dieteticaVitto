@@ -44,6 +44,7 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// Cargo categorías en sidebar
 async function cargarCategorias() {
   const catSnap = await getDocs(collection(db, "categorias"));
   categoryList.innerHTML = "";
@@ -73,33 +74,44 @@ async function cargarCategorias() {
     spanCat.classList.add("category-name");
     li.appendChild(spanCat);
 
-    // Botones
     const btnEditar = document.createElement("button");
     btnEditar.innerHTML = "✏️";
     btnEditar.title = "Editar nombre";
-    btnEditar.style.display = "none";
-    btnEditar.classList.add("btn-editar-categoria");
+    li.appendChild(btnEditar);
 
     const btnEliminar = document.createElement("button");
     btnEliminar.innerHTML = "🗑️";
     btnEliminar.title = "Eliminar categoría";
-    btnEliminar.style.display = "none";
-    btnEliminar.classList.add("btn-eliminar-categoria");
-
-    li.appendChild(btnEditar);
     li.appendChild(btnEliminar);
 
-    // Mostrar botones en hover
-    li.addEventListener("mouseenter", () => {
-      btnEditar.style.display = "inline";
-      btnEliminar.style.display = "inline";
-    });
-    li.addEventListener("mouseleave", () => {
-      if (!li.classList.contains("editando")) {
-        btnEditar.style.display = "none";
-        btnEliminar.style.display = "none";
+    // Funciones auxiliares
+    function cancelarEdicion() {
+      spanCat.textContent = capitalize(catId);
+      spanCat.contentEditable = false;
+      li.classList.remove("editando");
+      btnEditar.innerHTML = "✏️";
+      btnEditar.title = "Editar nombre";
+      btnEliminar.innerHTML = "🗑️";
+      btnEliminar.title = "Eliminar categoría";
+      document.removeEventListener("keydown", manejarTeclas);
+      document.removeEventListener("click", detectarClickFuera);
+    }
+
+    function manejarTeclas(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        btnEditar.click();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        cancelarEdicion();
       }
-    });
+    }
+
+    function detectarClickFuera(e) {
+      if (!li.contains(e.target)) {
+        cancelarEdicion();
+      }
+    }
 
     // Clic en categoría
     li.addEventListener("click", (e) => {
@@ -119,42 +131,11 @@ async function cargarCategorias() {
         btnEditar.title = "Guardar cambios";
         btnEliminar.innerHTML = "❌";
         btnEliminar.title = "Cancelar edición";
+        document.addEventListener("keydown", manejarTeclas);
+        document.addEventListener("click", detectarClickFuera);
         return;
       }
 
-      // Eventos adicionales para edición: Enter (guardar), Escape (cancelar), click fuera
-    function cancelarEdicion() {
-      spanCat.textContent = capitalize(catId);
-      spanCat.contentEditable = false;
-      li.classList.remove("editando");
-      btnEditar.innerHTML = "✏️";
-      btnEditar.title = "Editar nombre";
-      btnEliminar.innerHTML = "🗑️";
-      btnEliminar.title = "Eliminar categoría";
-      document.removeEventListener("keydown", manejarTeclas);
-      document.removeEventListener("click", detectarClickFuera);
-    }
-
-        function manejarTeclas(e) {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            btnEditar.click(); // simula guardar
-          } else if (e.key === "Escape") {
-            e.preventDefault();
-            cancelarEdicion();
-          }
-        }
-
-        function detectarClickFuera(e) {
-          if (!li.contains(e.target)) {
-            cancelarEdicion();
-          }
-        }
-
-        document.addEventListener("keydown", manejarTeclas);
-        document.addEventListener("click", detectarClickFuera);
-
-      // GUARDAR CAMBIO
       const nuevoNombre = spanCat.textContent.trim().toLowerCase();
       if (!nuevoNombre || nuevoNombre.length < 2) {
         Swal.fire("Error", "El nombre debe tener al menos 2 caracteres.", "error");
@@ -162,13 +143,7 @@ async function cargarCategorias() {
       }
 
       if (nuevoNombre === catId.toLowerCase()) {
-        // No hay cambios
-        spanCat.contentEditable = false;
-        li.classList.remove("editando");
-        btnEditar.innerHTML = "✏️";
-        btnEditar.title = "Editar nombre";
-        btnEliminar.innerHTML = "🗑️";
-        btnEliminar.title = "Eliminar categoría";
+        cancelarEdicion();
         return;
       }
 
@@ -179,9 +154,9 @@ async function cargarCategorias() {
         return;
       }
 
-      // Migrar productos a nueva categoría
       const oldRef = collection(db, "categorias", catId, "productos");
       const oldDocs = await getDocs(oldRef);
+
       await setDoc(nuevaRef, {});
       const batch = oldDocs.docs.map(d =>
         setDoc(doc(db, "categorias", nuevoNombre, "productos", d.id), d.data())
@@ -204,14 +179,7 @@ async function cargarCategorias() {
       e.stopPropagation();
 
       if (li.classList.contains("editando")) {
-        // Cancelar edición
-        spanCat.textContent = capitalize(catId);
-        spanCat.contentEditable = false;
-        li.classList.remove("editando");
-        btnEditar.innerHTML = "✏️";
-        btnEditar.title = "Editar nombre";
-        btnEliminar.innerHTML = "🗑️";
-        btnEliminar.title = "Eliminar categoría";
+        cancelarEdicion();
         return;
       }
 
