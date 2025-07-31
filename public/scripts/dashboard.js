@@ -122,6 +122,38 @@ async function cargarCategorias() {
         return;
       }
 
+      // Eventos adicionales para edición: Enter (guardar), Escape (cancelar), click fuera
+    function cancelarEdicion() {
+      spanCat.textContent = capitalize(catId);
+      spanCat.contentEditable = false;
+      li.classList.remove("editando");
+      btnEditar.innerHTML = "✏️";
+      btnEditar.title = "Editar nombre";
+      btnEliminar.innerHTML = "🗑️";
+      btnEliminar.title = "Eliminar categoría";
+      document.removeEventListener("keydown", manejarTeclas);
+      document.removeEventListener("click", detectarClickFuera);
+    }
+
+        function manejarTeclas(e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            btnEditar.click(); // simula guardar
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            cancelarEdicion();
+          }
+        }
+
+        function detectarClickFuera(e) {
+          if (!li.contains(e.target)) {
+            cancelarEdicion();
+          }
+        }
+
+        document.addEventListener("keydown", manejarTeclas);
+        document.addEventListener("click", detectarClickFuera);
+
       // GUARDAR CAMBIO
       const nuevoNombre = spanCat.textContent.trim().toLowerCase();
       if (!nuevoNombre || nuevoNombre.length < 2) {
