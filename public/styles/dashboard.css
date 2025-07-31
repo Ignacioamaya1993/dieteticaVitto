@@ -1,3 +1,4 @@
+/* Estilo general del body */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0; padding: 0;
@@ -5,15 +6,16 @@ body {
   color: #333;
 }
 
+/* Contenedor principal que incluye sidebar y contenido */
 .container {
   display: flex;
   min-height: 100vh;
 }
 
-/* Sidebar categorías */
+/* === SIDEBAR DE CATEGORÍAS === */
 .sidebar {
   background: #fff;
-  width: 250px;
+  width: 280px;
   border-right: 1px solid #ddd;
   padding: 1rem;
   box-shadow: 2px 0 5px rgb(0 0 0 / 0.05);
@@ -24,17 +26,17 @@ body {
   margin-bottom: 1rem;
 }
 
-/* Lista categorías */
+/* Lista de categorías (ul) */
 .category-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-/* Cada item categoría */
+/* Cada ítem de categoría */
 .category-list li {
-  position: relative;
-  padding: 0.6rem 2.2rem 0.6rem 0.8rem; /* espacio para la X */
+  position: relative; /* puede quedar o no */
+  padding: 0.6rem 0.8rem 0.6rem 0.8rem; /* menos padding derecho */
   margin-bottom: 0.3rem;
   cursor: pointer;
   border-radius: 6px;
@@ -52,19 +54,15 @@ body {
   color: #0a66c2;
 }
 
-/* X para eliminar categoría */
+/* Botón "X" para eliminar categoría */
 .category-list li .btn-eliminar-categoria {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static; /* o eliminar esta línea */
+  margin-left: 8px; /* espacio entre nombre y botones */
   color: #999;
-  font-weight: bold;
   font-size: 18px;
   opacity: 0;
   transition: opacity 0.3s ease, color 0.3s ease;
   cursor: pointer;
-  user-select: none;
   background: none;
   border: none;
   padding: 0;
@@ -73,10 +71,10 @@ body {
 
 .category-list li:hover .btn-eliminar-categoria {
   opacity: 1;
-  color: #d93025; /* rojo para alertar */
+  color: #d93025;
 }
 
-/* Main content */
+/* === CONTENIDO PRINCIPAL === */
 .main-content {
   flex-grow: 1;
   padding: 1rem 2rem;
@@ -84,7 +82,7 @@ body {
   flex-direction: column;
 }
 
-/* Buscador, orden y botón agregar */
+/* Sección de búsqueda, orden y botón agregar */
 .search-sort {
   display: flex;
   align-items: center;
@@ -92,6 +90,7 @@ body {
   gap: 1rem;
 }
 
+/* Input de búsqueda */
 .search-sort input[type="search"] {
   flex-grow: 1;
   padding: 0.5rem 1rem;
@@ -106,6 +105,7 @@ body {
   outline: none;
 }
 
+/* Select para ordenamiento */
 .search-sort select {
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -121,6 +121,7 @@ body {
   outline: none;
 }
 
+/* Botón para agregar producto */
 .btn-add-product {
   background-color: #59cfb6;
   border: none;
@@ -135,12 +136,10 @@ body {
 }
 
 .btn-add-product:hover {
-  background-color: #59cfb6;
+  background-color: #4dc9ab;
 }
 
-
-
-/* Tabla */
+/* === TABLA DE PRODUCTOS === */
 table {
   width: 100%;
   border-collapse: separate;
@@ -165,70 +164,9 @@ thead th {
   font-weight: 600;
 }
 
-/* Botón agregar categoría */
-.btn-agregar-categoria {
-  display: block;
-  margin: 1rem auto 0;
-  padding: 0.4rem 1rem;
-  background-color: #0a66c2;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: 90%;
-  max-width: 260px;
-  text-align: center;
-}
-
-.btn-agregar-categoria:hover {
-  background-color: #004a99;
-}
-
-#paginationControls {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 1rem;
-}
-
-#paginationControls button {
-  padding: 6px 12px;
-  border: 1.5px solid #59cfb6;
-  background-color: white;
-  color: #0a66c2;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-#paginationControls button:hover:not(:disabled) {
-  background-color: #59cfb6;
-  color: white;
-}
-
-#paginationControls button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-#paginationControls button[disabled] {
-  cursor: not-allowed;
-}
-
-#paginationControls button.active,
-#paginationControls button[aria-current="page"] {
-  background-color: #0a66c2;
-  color: white;
-  font-weight: 700;
-  cursor: default;
-}
-
+/* Celdas de tabla */
 tbody tr {
   transition: background-color 0.2s ease;
-  cursor: default;
 }
 
 tbody tr:hover {
@@ -240,6 +178,7 @@ tbody td {
   vertical-align: middle;
 }
 
+/* Celdas editables */
 tbody td[contenteditable="true"] {
   background-color: #fcfcfc;
   border-radius: 6px;
@@ -253,6 +192,7 @@ tbody td[contenteditable="true"]:focus {
   background-color: white;
 }
 
+/* Botones dentro de la tabla (acciones por fila) */
 .actions button {
   margin-right: 6px;
   background-color: #59cfb6;
@@ -283,7 +223,65 @@ tbody td[contenteditable="true"]:focus {
   filter: none;
 }
 
-/* Modal */
+/* === PAGINACIÓN === */
+#paginationControls {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+#paginationControls button {
+  padding: 6px 12px;
+  border: 1.5px solid #59cfb6;
+  background-color: white;
+  color: #0a66c2;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#paginationControls button:hover:not(:disabled) {
+  background-color: #59cfb6;
+  color: white;
+}
+
+#paginationControls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#paginationControls button.active,
+#paginationControls button[aria-current="page"] {
+  background-color: #0a66c2;
+  color: white;
+  font-weight: 700;
+  cursor: default;
+}
+
+/* === BOTÓN AGREGAR CATEGORÍA === */
+.btn-agregar-categoria {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.4rem 1rem;
+  background-color: #0a66c2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 90%;
+  max-width: 260px;
+  text-align: center;
+}
+
+.btn-agregar-categoria:hover {
+  background-color: #004a99;
+}
+
+/* === MODAL === */
 .modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -291,7 +289,7 @@ tbody td[contenteditable="true"]:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* mantenemos z-index alto para modal */
+  z-index: 9999;
 }
 
 .modal.hidden {
@@ -348,7 +346,7 @@ tbody td[contenteditable="true"]:focus {
 }
 
 .modal-content button:hover {
-  background-color: #59cfb6;
+  background-color: #4dc9ab;
 }
 
 .close {
@@ -363,15 +361,58 @@ tbody td[contenteditable="true"]:focus {
 }
 
 .close:hover {
-  color: #59cfb6;
+  color: #3bb298;
 }
 
-/* Esta regla asegura que SweetAlert esté por encima de todo */
+/* === CATEGORÍAS CON BOTONES EDITAR/ELIMINAR === */
+.category-item {
+  display: flex;
+  padding: 6px 10px;
+}
+
+.category-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Ajustar el contenedor de nombre para ocupar todo el espacio menos el de botones */
+.category-name {
+  flex-grow: 1;
+  white-space: normal;
+  overflow-wrap: break-word;
+  max-width: none; /* o un valor amplio para ocupar todo el ancho posible */
+}
+
+/* Botones solo visibles en hover o edición */
+.category-item button {
+  display: none;
+  margin-left: 6px;
+  font-size: 14px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.category-item:hover button,
+.category-item.editando button {
+  display: inline-block;
+}
+
+/* Sidebar tamaño fijo para evitar que cambie al seleccionar categorías */
+#categoryList {
+  width: 220px;
+  min-width: 200px;
+  max-width: 240px;
+  overflow-x: hidden;
+}
+
+/* SweetAlert por encima de todo */
 .swal2-container {
   z-index: 20000 !important;
 }
 
-/* Responsive */
+/* === RESPONSIVE === */
 @media (max-width: 700px) {
   .container {
     flex-direction: column;

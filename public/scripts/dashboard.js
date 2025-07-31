@@ -69,20 +69,25 @@ async function cargarCategorias() {
     li.classList.add("category-item");
     li.style.cursor = "pointer";
 
+    const container = document.createElement("div");
+    container.classList.add("category-content");
+
     const spanCat = document.createElement("span");
     spanCat.textContent = capitalize(catId);
     spanCat.classList.add("category-name");
-    li.appendChild(spanCat);
 
     const btnEditar = document.createElement("button");
     btnEditar.innerHTML = "✏️";
     btnEditar.title = "Editar nombre";
-    li.appendChild(btnEditar);
 
     const btnEliminar = document.createElement("button");
     btnEliminar.innerHTML = "🗑️";
     btnEliminar.title = "Eliminar categoría";
-    li.appendChild(btnEliminar);
+
+    container.appendChild(spanCat);
+    container.appendChild(btnEditar);
+    container.appendChild(btnEliminar);
+    li.appendChild(container);
 
     // Funciones auxiliares
     function cancelarEdicion() {
