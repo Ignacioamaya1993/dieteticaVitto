@@ -44,7 +44,6 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Cargo categorías en sidebar
 async function cargarCategorias() {
   const catSnap = await getDocs(collection(db, "categorias"));
   categoryList.innerHTML = "";
@@ -74,28 +73,116 @@ async function cargarCategorias() {
     spanCat.classList.add("category-name");
     li.appendChild(spanCat);
 
+    // Botones
+    const btnEditar = document.createElement("button");
+    btnEditar.innerHTML = "✏️";
+    btnEditar.title = "Editar nombre";
+    btnEditar.style.display = "none";
+    btnEditar.classList.add("btn-editar-categoria");
+
     const btnEliminar = document.createElement("button");
-    btnEliminar.textContent = "❌";
+    btnEliminar.innerHTML = "🗑️";
     btnEliminar.title = "Eliminar categoría";
-    btnEliminar.classList.add("btn-eliminar-categoria");
     btnEliminar.style.display = "none";
+    btnEliminar.classList.add("btn-eliminar-categoria");
+
+    li.appendChild(btnEditar);
     li.appendChild(btnEliminar);
 
-    // Mostrar X solo al hacer hover sobre li
-    li.addEventListener("mouseenter", () => btnEliminar.style.display = "inline");
-    li.addEventListener("mouseleave", () => btnEliminar.style.display = "none");
+    // Mostrar botones en hover
+    li.addEventListener("mouseenter", () => {
+      btnEditar.style.display = "inline";
+      btnEliminar.style.display = "inline";
+    });
+    li.addEventListener("mouseleave", () => {
+      if (!li.classList.contains("editando")) {
+        btnEditar.style.display = "none";
+        btnEliminar.style.display = "none";
+      }
+    });
 
-    // Seleccionar categoría al click en li (excepto botón X)
+    // Clic en categoría
     li.addEventListener("click", (e) => {
-      if (e.target === btnEliminar) return; // evitar conflicto con eliminar
+      if (e.target === btnEditar || e.target === btnEliminar) return;
       marcarCategoriaActiva(li);
       categoriaActual = catId;
       cargarProductos();
     });
 
-    // Eliminar categoría
+    // Clic en editar
+    btnEditar.addEventListener("click", async () => {
+      if (!li.classList.contains("editando")) {
+        li.classList.add("editando");
+        spanCat.contentEditable = true;
+        spanCat.focus();
+        btnEditar.innerHTML = "✅";
+        btnEditar.title = "Guardar cambios";
+        btnEliminar.innerHTML = "❌";
+        btnEliminar.title = "Cancelar edición";
+        return;
+      }
+
+      // GUARDAR CAMBIO
+      const nuevoNombre = spanCat.textContent.trim().toLowerCase();
+      if (!nuevoNombre || nuevoNombre.length < 2) {
+        Swal.fire("Error", "El nombre debe tener al menos 2 caracteres.", "error");
+        return;
+      }
+
+      if (nuevoNombre === catId.toLowerCase()) {
+        // No hay cambios
+        spanCat.contentEditable = false;
+        li.classList.remove("editando");
+        btnEditar.innerHTML = "✏️";
+        btnEditar.title = "Editar nombre";
+        btnEliminar.innerHTML = "🗑️";
+        btnEliminar.title = "Eliminar categoría";
+        return;
+      }
+
+      const nuevaRef = doc(db, "categorias", nuevoNombre);
+      const existente = await getDoc(nuevaRef);
+      if (existente.exists()) {
+        Swal.fire("Error", "Ya existe una categoría con ese nombre.", "error");
+        return;
+      }
+
+      // Migrar productos a nueva categoría
+      const oldRef = collection(db, "categorias", catId, "productos");
+      const oldDocs = await getDocs(oldRef);
+      await setDoc(nuevaRef, {});
+      const batch = oldDocs.docs.map(d =>
+        setDoc(doc(db, "categorias", nuevoNombre, "productos", d.id), d.data())
+      );
+      await Promise.all(batch);
+      await deleteDoc(doc(db, "categorias", catId));
+      for (const docDel of oldDocs.docs) {
+        await deleteDoc(doc(db, "categorias", catId, "productos", docDel.id));
+      }
+
+      Swal.fire("Actualizado", "Nombre de categoría cambiado correctamente.", "success");
+      categoriaActual = nuevoNombre;
+      await cargarCategorias();
+      await cargarCategoriasModal();
+      await cargarProductos();
+    });
+
+    // Clic en eliminar o cancelar
     btnEliminar.addEventListener("click", async (e) => {
       e.stopPropagation();
+
+      if (li.classList.contains("editando")) {
+        // Cancelar edición
+        spanCat.textContent = capitalize(catId);
+        spanCat.contentEditable = false;
+        li.classList.remove("editando");
+        btnEditar.innerHTML = "✏️";
+        btnEditar.title = "Editar nombre";
+        btnEliminar.innerHTML = "🗑️";
+        btnEliminar.title = "Eliminar categoría";
+        return;
+      }
+
       const result = await Swal.fire({
         title: `¿Eliminar la categoría "${capitalize(catId)}"?`,
         text: "Esto eliminará todos los productos dentro de esta categoría. ¡No se puede deshacer!",
@@ -104,16 +191,18 @@ async function cargarCategorias() {
         confirmButtonText: "Sí, eliminar",
         cancelButtonText: "Cancelar",
       });
+
       if (result.isConfirmed) {
         try {
-          // Eliminar productos dentro de la categoría
           const productosCol = collection(db, "categorias", catId, "productos");
           const productosSnap = await getDocs(productosCol);
-          const batchDeletes = productosSnap.docs.map(d => deleteDoc(doc(db, "categorias", catId, "productos", d.id)));
+          const batchDeletes = productosSnap.docs.map(d =>
+            deleteDoc(doc(db, "categorias", catId, "productos", d.id))
+          );
           await Promise.all(batchDeletes);
-          // Eliminar la categoría
           await deleteDoc(doc(db, "categorias", catId));
           Swal.fire("Eliminado", `Categoría "${capitalize(catId)}" eliminada.`, "success");
+
           if (categoriaActual === catId) categoriaActual = null;
           await cargarCategorias();
           await cargarCategoriasModal();
