@@ -1,5 +1,5 @@
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 import { db } from "./firebaseConfig.js";
 import { v4 as uuidv4 } from "https://jspm.dev/uuid";
 import { inicializarImportadorExcel } from './excelImport.js';
@@ -519,5 +519,16 @@ onAuthStateChanged(auth, (user) => {
       title: "No autorizado",
       text: "Debe iniciar sesión para usar esta aplicación.",
     });
+  }
+});
+
+//cerrar sesion
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+     window.location.href = "/";  // Redirige al login
+  } catch (error) {
+    console.error("Error al cerrar sesión:", error);
+    Swal.fire("Error", "No se pudo cerrar la sesión", "error");
   }
 });
