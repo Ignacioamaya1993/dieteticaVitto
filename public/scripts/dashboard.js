@@ -513,6 +513,9 @@ async function cargarProductos() {
     });
   }
 
+  // Guardamos el total sin filtrar para mostrar después
+  const todosLosProductos = [...productos];
+
   // Aplicar filtro stock bajo si está activo
   if (filtroStockBajoActivo) {
     productos = productos.filter(p => verificarAlerta(p));
@@ -526,12 +529,15 @@ async function cargarProductos() {
     productos = ordenarProductos(productos, sortSelect.value);
   }
 
+  // Ahora productos es la lista filtrada
+  const productosFiltrados = productos;
+
   paginarProductos(productos);
 
   // Actualizo alerta de stock bajo en la UI
   await actualizarAlertaStock(productos);
-  
-  // 🔢 Contador total de productos
+
+  // Contador total de productos
   const totalProductosInfo = document.getElementById("totalProductosInfo");
   const totalFiltrados = productosFiltrados.length;
   const totalEnCategoria = todosLosProductos.length;
