@@ -27,7 +27,7 @@ const modalCodigo = document.getElementById("modalCodigo");
 const modalNombre = document.getElementById("modalNombre");
 const modalPrecio = document.getElementById("modalPrecio");
 const modalStock = document.getElementById("modalStock");
-const modalStockMinimo = document.getElementById("modalStockMinimo"); // Asegurate de tener este campo en el modal HTML
+const modalStockMinimo = document.getElementById("modalStockMinimo"); 
 const modalGuardarBtn = document.getElementById("modalGuardarBtn");
 
 // Botón agregar categoría
@@ -40,16 +40,67 @@ categoryList.parentElement.appendChild(btnAgregarCategoria);
 inicializarImportadorExcel(cargarProductos);
 inicializarExportadorExcel(() => categoriaActual);
 
-
 // Variables para paginación
 let productosPaginados = [];
 let paginaActual = 1;
 let itemsPorPagina = 15;
 
+// Variables para búsqueda y orden
+const searchInput = document.getElementById("searchInput");
+const sortSelect = document.getElementById("sortSelect");
+
+// Filtro stock bajo activo
+let filtroStockBajoActivo = false;
+
+// Botón filtro stock bajo (se crea dinámicamente y se inserta en search-sort)
+const searchSortDiv = document.querySelector(".search-sort");
+const btnStockBajo = document.createElement("button");
+btnStockBajo.id = "btnStockBajo";
+btnStockBajo.classList.add("btn-small");
+btnStockBajo.title = "Mostrar productos con stock bajo";
+btnStockBajo.textContent = "⚠️ Stock bajo";
+btnStockBajo.style.marginLeft = "8px";
+searchSortDiv.appendChild(btnStockBajo);
+
+btnStockBajo.addEventListener("click", () => {
+  filtroStockBajoActivo = !filtroStockBajoActivo;
+  btnStockBajo.classList.toggle("activo", filtroStockBajoActivo);
+  cargarProductos();
+});
+
 // Capitalizar texto
 function capitalize(str) {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Función para ordenar productos
+function ordenarProductos(productos, criterio) {
+  const [campo, direccion] = criterio.split("-");
+  return productos.sort((a, b) => {
+    let valA = a[campo];
+    let valB = b[campo];
+    if (campo === "precio" || campo === "stock") {
+      valA = Number(valA);
+      valB = Number(valB);
+    } else {
+      valA = valA.toString().toLowerCase();
+      valB = valB.toString().toLowerCase();
+    }
+    if (valA < valB) return direccion === "asc" ? -1 : 1;
+    if (valA > valB) return direccion === "asc" ? 1 : -1;
+    return 0;
+  });
+}
+
+// Función para filtrar productos por búsqueda
+function filtrarProductos(productos, query) {
+  if (!query) return productos;
+  query = query.toLowerCase();
+  return productos.filter(prod =>
+    (prod.codigo && prod.codigo.toLowerCase().includes(query)) ||
+    (prod.nombre && prod.nombre.toLowerCase().includes(query))
+  );
 }
 
 // Cargo categorías en sidebar
@@ -148,7 +199,6 @@ async function cargarCategorias() {
 
       const nuevoNombre = spanCat.textContent.trim().toLowerCase();
       if (!nuevoNombre || nuevoNombre.length < 2) {
-        Swal.fire("Error", "El nombre debe tener al menos 2 caracteres.", "error");
         return;
       }
 
@@ -160,7 +210,6 @@ async function cargarCategorias() {
       const nuevaRef = doc(db, "categorias", nuevoNombre);
       const existente = await getDoc(nuevaRef);
       if (existente.exists()) {
-        Swal.fire("Error", "Ya existe una categoría con ese nombre.", "error");
         return;
       }
 
@@ -177,8 +226,8 @@ async function cargarCategorias() {
         await deleteDoc(doc(db, "categorias", catId, "productos", docDel.id));
       }
 
-      Swal.fire("Actualizado", "Nombre de categoría cambiado correctamente.", "success");
-      categoriaActual = nuevoNombre;
+      // Swal eliminado según pedido
+      categoriaActual = nuevaRef.id;
       await cargarCategorias();
       await cargarCategoriasModal();
       await cargarProductos();
@@ -192,34 +241,25 @@ async function cargarCategorias() {
         return;
       }
 
-      const result = await Swal.fire({
-        title: `¿Eliminar la categoría "${capitalize(catId)}"?`,
-        text: "Esto eliminará todos los productos dentro de esta categoría. ¡No se puede deshacer!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar",
-      });
+      if (!confirm(`¿Eliminar la categoría "${capitalize(catId)}"? Esto eliminará todos los productos dentro.`)) {
+        return;
+      }
 
-      if (result.isConfirmed) {
-        try {
-          const productosCol = collection(db, "categorias", catId, "productos");
-          const productosSnap = await getDocs(productosCol);
-          const batchDeletes = productosSnap.docs.map(d =>
-            deleteDoc(doc(db, "categorias", catId, "productos", d.id))
-          );
-          await Promise.all(batchDeletes);
-          await deleteDoc(doc(db, "categorias", catId));
-          Swal.fire("Eliminado", `Categoría "${capitalize(catId)}" eliminada.`, "success");
+      try {
+        const productosCol = collection(db, "categorias", catId, "productos");
+        const productosSnap = await getDocs(productosCol);
+        const batchDeletes = productosSnap.docs.map(d =>
+          deleteDoc(doc(db, "categorias", catId, "productos", d.id))
+        );
+        await Promise.all(batchDeletes);
+        await deleteDoc(doc(db, "categorias", catId));
 
-          if (categoriaActual === catId) categoriaActual = null;
-          await cargarCategorias();
-          await cargarCategoriasModal();
-          await cargarProductos();
-        } catch (error) {
-          console.error("Error eliminando categoría:", error);
-          Swal.fire("Error", "No se pudo eliminar la categoría.", "error");
-        }
+        if (categoriaActual === catId) categoriaActual = null;
+        await cargarCategorias();
+        await cargarCategoriasModal();
+        await cargarProductos();
+      } catch (error) {
+        console.error("Error eliminando categoría:", error);
       }
     });
 
@@ -263,8 +303,26 @@ document.getElementById("itemsPerPageSelect")?.addEventListener("change", (e) =>
   renderPaginaActual();
 });
 
+// Escuchar búsqueda y orden para recargar productos sin resetear filtro stock bajo ni paginación
+searchInput?.addEventListener("input", () => {
+  filtrarYRenderizarProductos();
+});
+sortSelect?.addEventListener("change", () => {
+  filtrarYRenderizarProductos();
+});
+
+function filtrarYRenderizarProductos() {
+  // Filtrar y ordenar los productos cargados en productosPaginados
+  let productos = productosPaginadosOriginal || [];
+  productos = filtrarProductos(productos, searchInput.value.trim());
+  productos = ordenarProductos(productos, sortSelect.value);
+  paginarProductos(productos);
+}
+
+let productosPaginadosOriginal = []; // Guardamos todos los productos cargados sin filtro paginación
+
 function paginarProductos(productos) {
-  productosPaginados = productos;
+  productosPaginadosOriginal = productos; // guardo copia original para filtros
   paginaActual = 1;
   renderPaginaActual();
 }
@@ -272,14 +330,14 @@ function paginarProductos(productos) {
 function renderPaginaActual() {
   const inicio = (paginaActual - 1) * itemsPorPagina;
   const fin = inicio + itemsPorPagina;
-  const productosEnPagina = productosPaginados.slice(inicio, fin);
+  const productosEnPagina = productosPaginadosOriginal.slice(inicio, fin);
   renderTabla(productosEnPagina);
   renderControlesPaginacion();
 }
 
 // Paginación con máximo 3 botones visibles desplazándose
 function renderControlesPaginacion() {
-  const totalPaginas = Math.ceil(productosPaginados.length / itemsPorPagina);
+  const totalPaginas = Math.ceil(productosPaginadosOriginal.length / itemsPorPagina);
   const pagDiv = document.getElementById("paginationControls");
   pagDiv.innerHTML = "";
   if (totalPaginas <= 1) return;
@@ -379,43 +437,47 @@ function renderTabla(productos) {
       };
 
       if (!updated.codigo || !updated.nombre || isNaN(updated.precio) || isNaN(updated.stock)) {
-        return Swal.fire({ icon: 'error', title: 'Error', text: 'Datos inválidos.' });
+        return;
       }
       if (isNaN(updated.stockMinimo)) updated.stockMinimo = 5;
 
       try {
         const refProd = doc(db, "categorias", tr.dataset.categoria, "productos", tr.dataset.id);
         await updateDoc(refProd, updated);
-        Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Producto actualizado correctamente.' });
-        cargarProductos();
+        Object.assign(prod, updated);
+        actualizarFilaAlertaYBoton(tr, prod);
       } catch (error) {
         console.error("Error actualizando producto:", error);
-        Swal.fire("Error", "No se pudo actualizar el producto.", "error");
       }
     });
 
     tr.querySelector(".delete").addEventListener("click", async () => {
-      const res = await Swal.fire({
-        title: '¿Eliminar este producto?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-      });
-      if (res.isConfirmed) {
-        try {
-          await deleteDoc(doc(db, "categorias", tr.dataset.categoria, "productos", tr.dataset.id));
-          Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Producto eliminado correctamente.' });
-          cargarProductos();
-        } catch (error) {
-          console.error("Error eliminando producto:", error);
-          Swal.fire("Error", "No se pudo eliminar el producto.", "error");
-        }
+      if (!confirm('¿Eliminar este producto?')) return;
+      try {
+        await deleteDoc(doc(db, "categorias", tr.dataset.categoria, "productos", tr.dataset.id));
+        cargarProductos();
+      } catch (error) {
+        console.error("Error eliminando producto:", error);
       }
     });
 
     tablaBody.appendChild(tr);
   });
+}
+
+// Función para actualizar solo la alerta y el botón guardar de una fila tras guardar
+function actualizarFilaAlertaYBoton(tr, prod) {
+  const alertaTd = tr.querySelector(".alerta");
+  if (verificarAlerta(prod)) {
+    alertaTd.textContent = "⚠️";
+    tr.classList.add("con-alerta");
+  } else {
+    alertaTd.textContent = "";
+    tr.classList.remove("con-alerta");
+  }
+  // Deshabilitar botón guardar luego de guardar
+  const btnGuardar = tr.querySelector(".guardar");
+  btnGuardar.disabled = true;
 }
 
 // Cargar productos y mostrar título
@@ -424,6 +486,7 @@ async function cargarProductos() {
     tablaBody.innerHTML = `<tr><td colspan="7" style="text-align:center; font-style: italic; color: #666;">Seleccione una categoría para ver productos</td></tr>`;
     tituloCategoria.textContent = "";
     if (alertaBadge) alertaBadge.textContent = "";
+    productosPaginadosOriginal = [];
     return;
   }
 
@@ -441,7 +504,6 @@ async function cargarProductos() {
         productos.push({ id: p.id, categoria: catDoc.id, ...p.data() });
       });
     }
-    paginarProductos(productos);
   } else {
     const ref = getCategoriaProductosRef();
     if (!ref) return;
@@ -449,8 +511,22 @@ async function cargarProductos() {
     querySnapshot.forEach(docSnap => {
       productos.push({ id: docSnap.id, categoria: categoriaActual, ...docSnap.data() });
     });
-    paginarProductos(productos);
   }
+
+  // Aplicar filtro stock bajo si está activo
+  if (filtroStockBajoActivo) {
+    productos = productos.filter(p => verificarAlerta(p));
+  }
+
+  // Aplicar búsqueda y orden si hay algo en los inputs
+  if (searchInput && searchInput.value.trim()) {
+    productos = filtrarProductos(productos, searchInput.value.trim());
+  }
+  if (sortSelect && sortSelect.value) {
+    productos = ordenarProductos(productos, sortSelect.value);
+  }
+
+  paginarProductos(productos);
 
   // Actualizo alerta de stock bajo en la UI
   await actualizarAlertaStock(productos);
@@ -474,7 +550,7 @@ addProductBtn.addEventListener("click", () => {
   modalNombre.value = "";
   modalPrecio.value = "";
   modalStock.value = "";
-  modalStockMinimo.value = "5"; // Default mínimo
+  modalStockMinimo.value = "5";
   modalGuardarBtn.disabled = true;
 });
 
@@ -502,7 +578,7 @@ modalGuardarBtn.addEventListener("click", async () => {
   let stockMinimo = parseInt(modalStockMinimo.value);
 
   if (!categoria || !codigo || !nombre || isNaN(precio) || isNaN(stock)) {
-    return Swal.fire("Error", "Complete todos los campos correctamente.", "error");
+    return;
   }
   if (isNaN(stockMinimo) || stockMinimo < 0) stockMinimo = 5;
 
@@ -510,30 +586,21 @@ modalGuardarBtn.addEventListener("click", async () => {
     const nuevoId = uuidv4();
     const refProd = doc(db, "categorias", categoria, "productos", nuevoId);
     await setDoc(refProd, { codigo, nombre, precio, stock, stockMinimo });
-    Swal.fire("Agregado", "Producto agregado correctamente.", "success");
+    // Swal eliminado según pedido
     modal.classList.add("hidden");
     cargarProductos();
   } catch (error) {
     console.error("Error agregando producto:", error);
-    Swal.fire("Error", "No se pudo agregar el producto.", "error");
   }
 });
 
 // Botón agregar categoría
 btnAgregarCategoria.addEventListener("click", async () => {
-  const { value: nombreCat } = await Swal.fire({
-    title: "Nueva categoría",
-    input: "text",
-    inputLabel: "Nombre de la categoría",
-    inputPlaceholder: "Ingrese nombre",
-    showCancelButton: true,
-  });
-
+  const nombreCat = prompt("Nombre de la nueva categoría:");
   if (!nombreCat) return;
 
   const nombreCatLower = nombreCat.trim().toLowerCase();
   if (nombreCatLower.length < 2) {
-    Swal.fire("Error", "El nombre debe tener al menos 2 caracteres.", "error");
     return;
   }
 
@@ -541,16 +608,14 @@ btnAgregarCategoria.addEventListener("click", async () => {
     const refCat = doc(db, "categorias", nombreCatLower);
     const existente = await getDoc(refCat);
     if (existente.exists()) {
-      Swal.fire("Error", "La categoría ya existe.", "error");
+      // Swal eliminado según pedido
       return;
     }
     await setDoc(refCat, {});
-    Swal.fire("Creado", "Categoría creada correctamente.", "success");
     await cargarCategorias();
     await cargarCategoriasModal();
   } catch (error) {
     console.error("Error creando categoría:", error);
-    Swal.fire("Error", "No se pudo crear la categoría.", "error");
   }
 });
 
@@ -571,7 +636,4 @@ document.getElementById("logoutBtn")?.addEventListener("click", () => {
 
 // Inicialización al cargar página
 window.addEventListener("DOMContentLoaded", () => {
-  // Puedes ejecutar aquí si necesitas algo al cargar, por ejemplo:
-  // cargarCategorias();
-  // cargarCategoriasModal();
 });
