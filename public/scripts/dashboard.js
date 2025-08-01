@@ -639,7 +639,7 @@ btnAgregarCategoria.addEventListener("click", async () => {
 // Verifico usuario logueado
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = "./login.html";
+    window.location.href = "/";
   } else {
     cargarCategorias();
     cargarCategoriasModal();
