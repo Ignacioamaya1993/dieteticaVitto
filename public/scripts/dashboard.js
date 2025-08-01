@@ -9,7 +9,7 @@ import { migrarProductos } from "./migrar.js";
 
 //agregarCampoStockMinimo(); // Se ejecutó el 1/8/2025 para agregar campo stockMinimo por defecto
 
-migrarProductos();
+//migrarProductos(); // Se ejecutó el 1/8/2025
 
 const auth = getAuth();
 
