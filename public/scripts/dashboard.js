@@ -56,7 +56,7 @@ let filtroStockBajoActivo = false;
 const searchSortDiv = document.querySelector(".search-sort");
 const btnStockBajo = document.createElement("button");
 btnStockBajo.id = "btnStockBajo";
-btnStockBajo.classList.add("btn-small");
+btnStockBajo.classList.add("filtro-pill");
 btnStockBajo.title = "Mostrar productos con stock bajo";
 btnStockBajo.textContent = "⚠️ Stock bajo";
 btnStockBajo.style.marginLeft = "8px";

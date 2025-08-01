@@ -424,6 +424,31 @@ tbody td[contenteditable="true"]:focus {
   text-align: center;
 }
 
+/* Pastilla filtro stock bajo */
+.filtro-pill {
+  background-color: #e7f3ff;
+  color: #0074cc;
+  border: 1px solid #0074cc;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filtro-pill:hover {
+  background-color: #d0e9ff;
+}
+
+.filtro-pill.activo {
+  background-color: #0074cc;
+  color: white;
+  border-color: #0074cc;
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 700px) {
   .container {
