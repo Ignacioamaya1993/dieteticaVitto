@@ -15,6 +15,9 @@ const tablaBody = document.querySelector("#productosTable tbody");
 const categoryList = document.getElementById("categoryList");
 const tituloCategoria = document.getElementById("tituloCategoria");
 
+// Elemento para mostrar cantidad de alertas
+const alertaBadge = document.getElementById("alertaBadge");
+
 // Modal elementos
 const modal = document.getElementById("productModal");
 const addProductBtn = document.getElementById("addProductBtn");
@@ -24,7 +27,7 @@ const modalCodigo = document.getElementById("modalCodigo");
 const modalNombre = document.getElementById("modalNombre");
 const modalPrecio = document.getElementById("modalPrecio");
 const modalStock = document.getElementById("modalStock");
-const modalStockMinimo = document.getElementById("modalStockMinimo"); // Agrega este campo en el modal HTML si quieres
+const modalStockMinimo = document.getElementById("modalStockMinimo"); // Asegurate de tener este campo en el modal HTML
 const modalGuardarBtn = document.getElementById("modalGuardarBtn");
 
 // Botón agregar categoría
@@ -36,6 +39,7 @@ categoryList.parentElement.appendChild(btnAgregarCategoria);
 // Inicializo importador y exportador Excel
 inicializarImportadorExcel(cargarProductos);
 inicializarExportadorExcel(() => categoriaActual);
+
 
 // Variables para paginación
 let productosPaginados = [];
@@ -344,7 +348,7 @@ function renderTabla(productos) {
 
     // Mostrar alerta si stock < stockMinimo
     const alertaTd = tr.querySelector(".alerta");
-    if (verificarAlerta(prod.stock, stockMin)) {
+    if (verificarAlerta(prod)) {
       alertaTd.textContent = "⚠️";
       tr.classList.add("con-alerta");
     } else {
@@ -419,6 +423,7 @@ async function cargarProductos() {
   if (!categoriaActual) {
     tablaBody.innerHTML = `<tr><td colspan="7" style="text-align:center; font-style: italic; color: #666;">Seleccione una categoría para ver productos</td></tr>`;
     tituloCategoria.textContent = "";
+    if (alertaBadge) alertaBadge.textContent = "";
     return;
   }
 
@@ -426,125 +431,147 @@ async function cargarProductos() {
     ? "Todos los productos"
     : `Categoría: ${capitalize(categoriaActual)}`;
 
+  let productos = [];
+
   if (categoriaActual === "todos") {
     const catSnap = await getDocs(collection(db, "categorias"));
-    let todosProductos = [];
-
     for (const catDoc of catSnap.docs) {
       const prodSnap = await getDocs(collection(db, "categorias", catDoc.id, "productos"));
       prodSnap.forEach(p => {
-        todosProductos.push({
-          id: p.id,
-          categoria: catDoc.id,
-          ...p.data()
-        });
+        productos.push({ id: p.id, categoria: catDoc.id, ...p.data() });
       });
     }
-
-    paginarProductos(todosProductos);
+    paginarProductos(productos);
   } else {
     const ref = getCategoriaProductosRef();
     if (!ref) return;
     const querySnapshot = await getDocs(ref);
-    let productos = [];
     querySnapshot.forEach(docSnap => {
-      productos.push({
-        id: docSnap.id,
-        categoria: categoriaActual,
-        ...docSnap.data()
-      });
+      productos.push({ id: docSnap.id, categoria: categoriaActual, ...docSnap.data() });
     });
-
     paginarProductos(productos);
   }
+
+  // Actualizo alerta de stock bajo en la UI
+  await actualizarAlertaStock(productos);
+}
+
+// Función para actualizar contador de productos con stock bajo
+async function actualizarAlertaStock(productos) {
+  if (!alertaBadge) return;
+
+  const cantidadAlertas = contarProductosConAlerta(productos);
+  alertaBadge.textContent = cantidadAlertas > 0
+    ? `⚠️ Productos con stock bajo: ${cantidadAlertas}`
+    : "";
 }
 
 // Modal nuevo producto
 addProductBtn.addEventListener("click", () => {
   modal.classList.remove("hidden");
-  modalCategoriaSelect.value = categoriaActual === "todos" ? "" : categoriaActual || "";
+  modalCategoriaSelect.value = categoriaActual !== "todos" ? categoriaActual : "";
   modalCodigo.value = "";
   modalNombre.value = "";
   modalPrecio.value = "";
   modalStock.value = "";
-  if(modalStockMinimo) modalStockMinimo.value = 5; // por defecto 5
-  modalCodigo.focus();
+  modalStockMinimo.value = "5"; // Default mínimo
+  modalGuardarBtn.disabled = true;
 });
 
-closeModalBtn.addEventListener("click", () => modal.classList.add("hidden"));
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) modal.classList.add("hidden");
+// Cerrar modal
+closeModalBtn.addEventListener("click", () => {
+  modal.classList.add("hidden");
 });
 
+// Habilitar botón guardar si hay cambios en modal
+[modalCategoriaSelect, modalCodigo, modalNombre, modalPrecio, modalStock, modalStockMinimo].forEach(el => {
+  el.addEventListener("input", () => {
+    const habilitar = modalCategoriaSelect.value && modalCodigo.value.trim() && modalNombre.value.trim()
+      && modalPrecio.value.trim() && modalStock.value.trim() && modalStockMinimo.value.trim();
+    modalGuardarBtn.disabled = !habilitar;
+  });
+});
+
+// Guardar producto nuevo
 modalGuardarBtn.addEventListener("click", async () => {
-  const categoria = modalCategoriaSelect.value;
+  const categoria = modalCategoriaSelect.value.trim();
   const codigo = modalCodigo.value.trim();
   const nombre = modalNombre.value.trim();
   const precio = parseFloat(modalPrecio.value);
   const stock = parseInt(modalStock.value);
-  const stockMinimoVal = modalStockMinimo ? parseInt(modalStockMinimo.value) : 5;
+  let stockMinimo = parseInt(modalStockMinimo.value);
 
   if (!categoria || !codigo || !nombre || isNaN(precio) || isNaN(stock)) {
     return Swal.fire("Error", "Complete todos los campos correctamente.", "error");
   }
-  const stockMinimoFinal = isNaN(stockMinimoVal) ? 5 : stockMinimoVal;
+  if (isNaN(stockMinimo) || stockMinimo < 0) stockMinimo = 5;
 
   try {
-    const prodId = uuidv4();
-    await setDoc(doc(db, "categorias", categoria, "productos", prodId), {
-      codigo,
-      nombre,
-      precio,
-      stock,
-      stockMinimo: stockMinimoFinal
-    });
-    Swal.fire("Guardado", "Producto agregado correctamente.", "success");
+    const nuevoId = uuidv4();
+    const refProd = doc(db, "categorias", categoria, "productos", nuevoId);
+    await setDoc(refProd, { codigo, nombre, precio, stock, stockMinimo });
+    Swal.fire("Agregado", "Producto agregado correctamente.", "success");
     modal.classList.add("hidden");
     cargarProductos();
   } catch (error) {
-    console.error("Error guardando producto:", error);
-    Swal.fire("Error", "No se pudo guardar el producto.", "error");
+    console.error("Error agregando producto:", error);
+    Swal.fire("Error", "No se pudo agregar el producto.", "error");
   }
 });
 
-// Agregar categoría botón
+// Botón agregar categoría
 btnAgregarCategoria.addEventListener("click", async () => {
   const { value: nombreCat } = await Swal.fire({
-    title: 'Nueva categoría',
-    input: 'text',
-    inputLabel: 'Nombre de la categoría',
-    inputPlaceholder: 'Ingrese nombre...',
+    title: "Nueva categoría",
+    input: "text",
+    inputLabel: "Nombre de la categoría",
+    inputPlaceholder: "Ingrese nombre",
     showCancelButton: true,
-    inputValidator: (value) => {
-      if (!value || value.trim().length < 2) return 'Debe ingresar al menos 2 caracteres';
-      return null;
-    }
   });
 
   if (!nombreCat) return;
 
-  const catId = nombreCat.trim().toLowerCase();
-  const docRef = doc(db, "categorias", catId);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    Swal.fire("Error", "Ya existe una categoría con ese nombre.", "error");
+  const nombreCatLower = nombreCat.trim().toLowerCase();
+  if (nombreCatLower.length < 2) {
+    Swal.fire("Error", "El nombre debe tener al menos 2 caracteres.", "error");
     return;
   }
 
   try {
-    await setDoc(docRef, {});
+    const refCat = doc(db, "categorias", nombreCatLower);
+    const existente = await getDoc(refCat);
+    if (existente.exists()) {
+      Swal.fire("Error", "La categoría ya existe.", "error");
+      return;
+    }
+    await setDoc(refCat, {});
     Swal.fire("Creado", "Categoría creada correctamente.", "success");
-    cargarCategorias();
-    cargarCategoriasModal();
+    await cargarCategorias();
+    await cargarCategoriasModal();
   } catch (error) {
     console.error("Error creando categoría:", error);
     Swal.fire("Error", "No se pudo crear la categoría.", "error");
   }
 });
 
-// Inicialización
-(async () => {
-  await cargarCategorias();
-  await cargarCategoriasModal();
-  await cargarProductos();
-})();
+// Verifico usuario logueado
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "./login.html";
+  } else {
+    cargarCategorias();
+    cargarCategoriasModal();
+  }
+});
+
+// Logout
+document.getElementById("logoutBtn")?.addEventListener("click", () => {
+  signOut(auth);
+});
+
+// Inicialización al cargar página
+window.addEventListener("DOMContentLoaded", () => {
+  // Puedes ejecutar aquí si necesitas algo al cargar, por ejemplo:
+  // cargarCategorias();
+  // cargarCategoriasModal();
+});
