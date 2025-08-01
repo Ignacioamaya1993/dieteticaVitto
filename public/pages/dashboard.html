@@ -28,6 +28,7 @@
     </div>
 
         <h2 id="tituloCategoria"></h2>
+        <div id="alertaBadge" style="color: red; font-weight: bold; margin-top: 6px;"></div>
       <div class="search-sort">
         <input type="search" id="searchInput" placeholder="Buscar por código o nombre..." />
         <select id="sortSelect" title="Ordenar">
@@ -111,6 +112,7 @@
       <input type="text" id="modalNombre" placeholder="Nombre" />
       <input type="number" id="modalPrecio" placeholder="Precio" min="0" step="0.01" />
       <input type="number" id="modalStock" placeholder="Stock" min="0" step="1" />
+      <input type="number" id="modalStockMinimo" placeholder="Stock mínimo" min="0" step="1" value="5" />
       <button id="modalGuardarBtn">Guardar</button>
     </div>
   </div>
