@@ -29,6 +29,21 @@ const modalPrecio = document.getElementById("modalPrecio");
 const modalStock = document.getElementById("modalStock");
 const modalStockMinimo = document.getElementById("modalStockMinimo"); 
 const modalGuardarBtn = document.getElementById("modalGuardarBtn");
+const modalPrecioBruto = document.getElementById("modalPrecioBruto");
+const modalPorcentajeAplicado = document.getElementById("modalPorcentajeAplicado");
+const modalPrecioNeto = document.getElementById("modalPrecioNeto");
+const modalDistribuidor = document.getElementById("modalDistribuidor");
+
+// Actualiza automáticamente el precio neto cuando se modifican bruto o %
+function actualizarPrecioNetoEnModal() {
+  const bruto = parseFloat(modalPrecioBruto.value);
+  const porcentaje = parseFloat(modalPorcentajeAplicado.value);
+  if (!isNaN(bruto) && !isNaN(porcentaje)) {
+    modalPrecioNeto.value = (bruto * (1 + porcentaje / 100)).toFixed(2);
+  }
+}
+modalPrecioBruto.addEventListener("input", actualizarPrecioNetoEnModal);
+modalPorcentajeAplicado.addEventListener("input", actualizarPrecioNetoEnModal);
 
 // Botón agregar categoría
 const btnAgregarCategoria = document.createElement("button");
@@ -392,11 +407,14 @@ function renderTabla(productos) {
     const stockMin = typeof prod.stockMinimo === "number" ? prod.stockMinimo : 5;
 
     tr.innerHTML = `
-      <td contenteditable="true" data-field="codigo">${prod.codigo}</td>
-      <td contenteditable="true" data-field="nombre">${prod.nombre}</td>
-      <td contenteditable="true" data-field="precio">${prod.precio}</td>
-      <td contenteditable="true" data-field="stock">${prod.stock}</td>
-      <td contenteditable="true" data-field="stockMinimo">${stockMin}</td>
+      <td contenteditable="true" data-field="codigo">${prod.codigo || ""}</td>
+      <td contenteditable="true" data-field="nombre">${prod.nombre || ""}</td>
+      <td contenteditable="true" data-field="precioBruto">${prod.precioBruto ?? ""}</td>
+      <td contenteditable="true" data-field="porcentajeAplicado">${prod.porcentajeAplicado ?? ""}</td>
+      <td contenteditable="true" data-field="precioNeto">${prod.precioNeto ?? ""}</td>
+      <td contenteditable="true" data-field="distribuidor">${prod.distribuidor || ""}</td>
+      <td contenteditable="true" data-field="stock">${prod.stock ?? ""}</td>
+      <td contenteditable="true" data-field="stockMinimo">${prod.stockMinimo ?? 5}</td>
       <td class="alerta" style="text-align:center; font-size: 1.2em;"></td>
       <td class="actions">
         <button class="guardar" disabled>Guardar</button>
@@ -428,13 +446,23 @@ function renderTabla(productos) {
     });
 
     btnGuardar.addEventListener("click", async () => {
-      const updated = {
-        codigo: tr.children[0].textContent.trim(),
-        nombre: tr.children[1].textContent.trim(),
-        precio: parseFloat(tr.children[2].textContent),
-        stock: parseInt(tr.children[3].textContent),
-        stockMinimo: parseInt(tr.children[4].textContent),
-      };
+    const updated = {
+      codigo: tr.children[0].textContent.trim(),
+      nombre: tr.children[1].textContent.trim(),
+      precioBruto: parseFloat(tr.children[2].textContent),
+      porcentajeAplicado: parseFloat(tr.children[3].textContent),
+      precioNeto: parseFloat(tr.children[4].textContent),
+      distribuidor: tr.children[5].textContent.trim(),
+      stock: parseInt(tr.children[6].textContent),
+      stockMinimo: parseInt(tr.children[7].textContent)
+    };
+
+    // Si el precio neto no fue modificado manualmente, lo calculamos
+    if (isNaN(updated.precioNeto)) {
+      const bruto = updated.precioBruto || 0;
+      const porcentaje = updated.porcentajeAplicado || 0;
+      updated.precioNeto = +(bruto * (1 + porcentaje / 100)).toFixed(2);
+    }
 
       if (!updated.codigo || !updated.nombre || isNaN(updated.precio) || isNaN(updated.stock)) {
         return;
@@ -590,20 +618,25 @@ modalGuardarBtn.addEventListener("click", async () => {
   const categoria = modalCategoriaSelect.value.trim();
   const codigo = modalCodigo.value.trim();
   const nombre = modalNombre.value.trim();
-  const precio = parseFloat(modalPrecio.value);
+  const precioBruto = parseFloat(modalPrecioBruto.value);
+  const porcentajeAplicado = parseFloat(modalPorcentajeAplicado.value);
+  let precioNeto = parseFloat(modalPrecioNeto.value);
+  const distribuidor = modalDistribuidor.value.trim();
   const stock = parseInt(modalStock.value);
   let stockMinimo = parseInt(modalStockMinimo.value);
 
-  if (!categoria || !codigo || !nombre || isNaN(precio) || isNaN(stock)) {
-    return;
+  if (isNaN(precioNeto)) {
+    precioNeto = +(precioBruto * (1 + porcentajeAplicado / 100)).toFixed(2);
   }
+
+  if (!categoria || !codigo || !nombre || isNaN(precioBruto) || isNaN(stock)) return;
   if (isNaN(stockMinimo) || stockMinimo < 0) stockMinimo = 5;
 
   try {
     const nuevoId = uuidv4();
     const refProd = doc(db, "categorias", categoria, "productos", nuevoId);
-    await setDoc(refProd, { codigo, nombre, precio, stock, stockMinimo });
-    // Swal eliminado según pedido
+    await setDoc(refProd, {codigo, nombre, precioBruto, porcentajeAplicado, precioNeto, distribuidor, 
+    stock, stockMinimo });
     modal.classList.add("hidden");
     cargarProductos();
   } catch (error) {

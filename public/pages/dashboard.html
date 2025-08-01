@@ -83,17 +83,22 @@
         <div id="totalProductosInfo" style="margin-top: 8px; font-size: 14px; color: #333;"></div>
 
       <table id="productosTable">
-        <thead>
+
+      <thead>
         <tr>
           <th>Código</th>
           <th>Nombre</th>
-          <th>Precio</th>
+          <th>Precio Bruto</th>
+          <th>% Aplicado</th>
+          <th>Precio Neto</th>
+          <th>Distribuidor</th>
           <th>Stock</th>
           <th>Stock mínimo</th>
           <th>Alerta</th>
           <th>Acciones</th>
         </tr>
       </thead>
+
         <tbody>
           <!-- Productos cargados aquí -->
           <tr><td colspan="5" style="text-align:center; font-style: italic; color: #666;">Seleccione una categoría para ver productos</td></tr>
@@ -115,6 +120,11 @@
       <input type="number" id="modalPrecio" placeholder="Precio" min="0" step="0.01" />
       <input type="number" id="modalStock" placeholder="Stock" min="0" step="1" />
       <input type="number" id="modalStockMinimo" placeholder="Stock mínimo" min="0" step="1" value="5" />
+      <input type="number" id="modalPrecioBruto" placeholder="Precio bruto" step="0.01" />
+      <input type="number" id="modalPorcentajeAplicado" placeholder="% aplicado" step="0.01" />
+      <input type="number" id="modalPrecioNeto" placeholder="Precio neto" step="0.01" />
+      <input type="text" id="modalDistribuidor" placeholder="Distribuidor" />
+
       <button id="modalGuardarBtn">Guardar</button>
     </div>
   </div>
