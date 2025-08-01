@@ -5,8 +5,11 @@ import { v4 as uuidv4 } from "https://jspm.dev/uuid";
 import { inicializarImportadorExcel } from './excelImport.js';
 import { inicializarExportadorExcel } from "./excelExport.js";
 import { agregarCampoStockMinimo, verificarAlerta, contarProductosConAlerta, renderizarAlertaEnFila } from "./stockAlert.js";
+import { migrarProductos } from "./migrar.js";
 
 //agregarCampoStockMinimo(); // Se ejecutó el 1/8/2025 para agregar campo stockMinimo por defecto
+
+migrarProductos();
 
 const auth = getAuth();
 
