@@ -412,6 +412,18 @@ tbody td[contenteditable="true"]:focus {
   z-index: 20000 !important;
 }
 
+.stock-alert {
+  background-color: #ffe5e5; /* fondo rojo claro para filas en alerta */
+}
+
+.input-stock-minimo {
+  padding: 2px 4px;
+  font-size: 0.9em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 700px) {
   .container {

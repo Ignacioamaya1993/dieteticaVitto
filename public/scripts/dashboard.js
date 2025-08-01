@@ -4,6 +4,9 @@ import { db } from "./firebaseConfig.js";
 import { v4 as uuidv4 } from "https://jspm.dev/uuid";
 import { inicializarImportadorExcel } from './excelImport.js';
 import { inicializarExportadorExcel } from "./excelExport.js";
+import {agregarCampoStockMinimo, verificarAlerta, contarProductosConAlerta, renderizarAlertaEnFila} from "./stockAlert.js";
+
+agregarCampoStockMinimo();
 
 const auth = getAuth();
 
@@ -254,7 +257,6 @@ function getCategoriaProductosRef() {
 }
 
 // Paginación
-
 document.getElementById("itemsPerPageSelect")?.addEventListener("change", (e) => {
   itemsPorPagina = parseInt(e.target.value);
   paginaActual = 1;
@@ -520,8 +522,6 @@ document.getElementById("searchInput").addEventListener("input", async (e) => {
 document.getElementById("sortSelect").addEventListener("change", async (e) => {
   const valor = e.target.value;
   if (!categoriaActual || categoriaActual === "todos") {
-    // Si no hay categoría o es "todos", podrías elegir cómo manejarlo
-    // Por ejemplo: mostrar mensaje o simplemente no ordenar
     return;
   }
 
