@@ -1,7 +1,7 @@
 // migrar.js
-import { getFirestore, collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+import { db } from "./firebaseConfig.js";
 
-const db = getFirestore();
 const porcentajePorDefecto = 21;
 
 export async function migrarProductos() {
@@ -31,5 +31,3 @@ export async function migrarProductos() {
 
   console.log("✅ Migración finalizada");
 }
-
-// No se ejecuta automáticamente
