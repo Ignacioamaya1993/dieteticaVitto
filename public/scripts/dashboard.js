@@ -530,6 +530,17 @@ async function cargarProductos() {
 
   // Actualizo alerta de stock bajo en la UI
   await actualizarAlertaStock(productos);
+  
+  // 🔢 Contador total de productos
+  const totalProductosInfo = document.getElementById("totalProductosInfo");
+  const totalFiltrados = productosFiltrados.length;
+  const totalEnCategoria = todosLosProductos.length;
+
+  if (filtroStockBajoActivo) {
+    totalProductosInfo.textContent = `Productos con stock bajo: ${totalFiltrados} de ${totalEnCategoria}`;
+  } else {
+    totalProductosInfo.textContent = `Productos totales: ${totalEnCategoria}`;
+  }
 }
 
 // Función para actualizar contador de productos con stock bajo
