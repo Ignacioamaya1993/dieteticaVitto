@@ -255,7 +255,18 @@ async function cargarCategorias() {
         return;
       }
 
-      if (!confirm(`¿Eliminar la categoría "${capitalize(catId)}"? Esto eliminará todos los productos dentro.`)) {
+      const result = await Swal.fire({
+        title: `¿Eliminar la categoría "${capitalize(catId)}"?`,
+        text: "Esto eliminará todos los productos dentro.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!result.isConfirmed) {
         return;
       }
 
@@ -671,26 +682,54 @@ modalGuardarBtn.addEventListener("click", async () => {
 
 // Botón agregar categoría
 btnAgregarCategoria.addEventListener("click", async () => {
-  const nombreCat = prompt("Nombre de la nueva categoría:");
+  const { value: nombreCat } = await Swal.fire({
+    title: 'Nombre de la nueva categoría',
+    input: 'text',
+    inputLabel: 'Ingresá el nombre',
+    inputPlaceholder: 'Nombre de la categoría',
+    showCancelButton: true,
+    inputValidator: (value) => {
+      if (!value) {
+        return 'El nombre es obligatorio';
+      }
+      if (value.trim().length < 2) {
+        return 'El nombre debe tener al menos 2 caracteres';
+      }
+    }
+  });
+
   if (!nombreCat) return;
 
   const nombreCatLower = nombreCat.trim().toLowerCase();
-  if (nombreCatLower.length < 2) {
-    return;
-  }
 
   try {
     const refCat = doc(db, "categorias", nombreCatLower);
     const existente = await getDoc(refCat);
     if (existente.exists()) {
-      // Swal eliminado según pedido
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'La categoría ya existe',
+      });
       return;
     }
     await setDoc(refCat, {});
     await cargarCategorias();
     await cargarCategoriasModal();
+    await Swal.fire({
+      icon: 'success',
+      title: 'Categoría creada',
+      text: `Se creó la categoría "${nombreCatLower}"`,
+      timer: 1500,
+      showConfirmButton: false,
+    });
   } catch (error) {
     console.error("Error creando categoría:", error);
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudo crear la categoría',
+    });
   }
 });
 
