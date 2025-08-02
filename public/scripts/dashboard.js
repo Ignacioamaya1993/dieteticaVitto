@@ -25,7 +25,6 @@ const closeModalBtn = document.getElementById("closeModalBtn");
 const modalCategoriaSelect = document.getElementById("modalCategoriaSelect");
 const modalCodigo = document.getElementById("modalCodigo");
 const modalNombre = document.getElementById("modalNombre");
-const modalPrecio = document.getElementById("modalPrecio");
 const modalStock = document.getElementById("modalStock");
 const modalStockMinimo = document.getElementById("modalStockMinimo"); 
 const modalGuardarBtn = document.getElementById("modalGuardarBtn");
@@ -435,6 +434,29 @@ function renderTabla(productos) {
     // Detectar cambios para habilitar botón guardar
     const btnGuardar = tr.querySelector(".guardar");
     const camposEditables = [...tr.querySelectorAll("td[contenteditable=true]")];
+    // Detectar cambios y actualizar automáticamente el precio neto
+    const campoPrecioBruto = tr.querySelector('[data-field="precioBruto"]');
+    const campoPorcentaje = tr.querySelector('[data-field="porcentajeAplicado"]');
+    const campoPrecioNeto = tr.querySelector('[data-field="precioNeto"]');
+
+    function recalcularPrecioNeto() {
+      const bruto = parseFloat(campoPrecioBruto.textContent.trim());
+      const porcentaje = parseFloat(campoPorcentaje.textContent.trim());
+
+      if (!isNaN(bruto) && !isNaN(porcentaje)) {
+        const nuevoPrecioNeto = +(bruto * (1 + porcentaje / 100)).toFixed(2);
+        campoPrecioNeto.textContent = nuevoPrecioNeto;
+      }
+    }
+
+    campoPrecioBruto.addEventListener("input", () => {
+      recalcularPrecioNeto();
+    });
+
+    campoPorcentaje.addEventListener("input", () => {
+      recalcularPrecioNeto();
+    });
+
     const originalValues = camposEditables.map(td => td.textContent.trim());
 
     camposEditables.forEach((td, idx) => {
@@ -464,9 +486,9 @@ function renderTabla(productos) {
       updated.precioNeto = +(bruto * (1 + porcentaje / 100)).toFixed(2);
     }
 
-      if (!updated.codigo || !updated.nombre || isNaN(updated.precio) || isNaN(updated.stock)) {
-        return;
-      }
+    if (!updated.codigo || !updated.nombre || isNaN(updated.precioBruto) || isNaN(updated.stock)) {
+      return;
+    }
       if (isNaN(updated.stockMinimo)) updated.stockMinimo = 5;
 
       try {
@@ -593,9 +615,12 @@ addProductBtn.addEventListener("click", () => {
   modalCategoriaSelect.value = categoriaActual !== "todos" ? categoriaActual : "";
   modalCodigo.value = "";
   modalNombre.value = "";
-  modalPrecio.value = "";
+  modalPrecioBruto.value = ""; 
+  modalPorcentajeAplicado.value = "";
+  modalPrecioNeto.value = "";
+  modalDistribuidor.value = "";
   modalStock.value = "";
-  modalStockMinimo.value = "5";
+  modalStockMinimo.value = "";
   modalGuardarBtn.disabled = true;
 });
 
@@ -605,10 +630,10 @@ closeModalBtn.addEventListener("click", () => {
 });
 
 // Habilitar botón guardar si hay cambios en modal
-[modalCategoriaSelect, modalCodigo, modalNombre, modalPrecio, modalStock, modalStockMinimo].forEach(el => {
+[modalCategoriaSelect, modalCodigo, modalNombre, modalPrecioBruto, modalPorcentajeAplicado, modalStock].forEach(el => {
   el.addEventListener("input", () => {
     const habilitar = modalCategoriaSelect.value && modalCodigo.value.trim() && modalNombre.value.trim()
-      && modalPrecio.value.trim() && modalStock.value.trim() && modalStockMinimo.value.trim();
+      && modalPrecioBruto.value.trim() && modalPorcentajeAplicado.value.trim() && modalStock.value.trim();
     modalGuardarBtn.disabled = !habilitar;
   });
 });

@@ -34,8 +34,8 @@
         <select id="sortSelect" title="Ordenar">
           <option value="nombre-asc">Nombre ↑</option>
           <option value="nombre-desc">Nombre ↓</option>
-          <option value="precio-asc">Precio ↑</option>
-          <option value="precio-desc">Precio ↓</option>
+          <option value="precio-asc">Precio Neto ↑</option>
+          <option value="precio-desc">Precio Neto ↓</option>
           <option value="codigo-asc">Código A → Z</option>
           <option value="codigo-desc">Código Z → A</option>
         </select>
@@ -62,7 +62,7 @@
         <label for="subirArchivoExcel">Seleccionar archivo:</label>
         <input type="file" id="subirArchivoExcel" accept=".xls,.xlsx" />
 
-        <p style="font-size: 13px; color: #666; margin-top: 8px;">El archivo debe tener columnas: Código | Nombre | Precio | Stock</p>
+        <p style="font-size: 13px; color: #666; margin-top: 8px;">El archivo debe tener columnas: Código | Nombre | Precio Bruto | % Aplicado | Precio Neto | Distribuidor | Stock | Stock Minimo</p>
       </div>
     </div>
 
@@ -107,27 +107,27 @@
     </section>
   </div>
 
-  <!-- Modal para agregar/editar productos -->
-  <div id="productModal" class="modal hidden">
-    <div class="modal-content">
-      <span id="closeModalBtn" class="close">&times;</span>
-      <h3>Nuevo producto</h3>
-      <select id="modalCategoriaSelect" required>
-        <option value="">Seleccioná una categoría</option>
-      </select>
-      <input type="text" id="modalCodigo" placeholder="Código" />
-      <input type="text" id="modalNombre" placeholder="Nombre" />
-      <input type="number" id="modalPrecio" placeholder="Precio" min="0" step="0.01" />
-      <input type="number" id="modalStock" placeholder="Stock" min="0" step="1" />
-      <input type="number" id="modalStockMinimo" placeholder="Stock mínimo" min="0" step="1" value="5" />
-      <input type="number" id="modalPrecioBruto" placeholder="Precio bruto" step="0.01" />
-      <input type="number" id="modalPorcentajeAplicado" placeholder="% aplicado" step="0.01" />
-      <input type="number" id="modalPrecioNeto" placeholder="Precio neto" step="0.01" />
-      <input type="text" id="modalDistribuidor" placeholder="Distribuidor" />
+<!-- Modal para agregar/editar productos -->
+<div id="productModal" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeModalBtn" class="close">&times;</span>
+    <h3>Nuevo producto</h3>
+    <select id="modalCategoriaSelect" required>
+      <option value="">Seleccioná una categoría</option>
+    </select>
+    <input type="text" id="modalCodigo" placeholder="Código" />
+    <input type="text" id="modalNombre" placeholder="Nombre" />
+    <input type="number" id="modalPrecioBruto" placeholder="Precio bruto" step="0.01" />
+    <input type="number" id="modalPorcentajeAplicado" placeholder="% aplicado" step="0.01" />
+    <input type="number" id="modalPrecioNeto" placeholder="Precio neto" step="0.01" />
+    <input type="text" id="modalDistribuidor" placeholder="Distribuidor" />
+    <input type="number" id="modalStock" placeholder="Stock" min="0" step="1" />
+    <input type="number" id="modalStockMinimo" placeholder="Stock mínimo" min="0" step="1" />
 
-      <button id="modalGuardarBtn">Guardar</button>
-    </div>
+    <button id="modalGuardarBtn">Guardar</button>
   </div>
+</div>
+
 
   <script type="module" src="../scripts/dashboard.js"></script>
 </body>

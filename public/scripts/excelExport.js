@@ -24,15 +24,30 @@ export function inicializarExportadorExcel(getCategoriaSeleccionada) {
         return;
       }
 
-      // Construir array para Excel: encabezados + filas
-      const data = [["Código", "Nombre", "Precio", "Stock"]];
+      // Encabezados para Excel
+      const data = [[
+        "Código", 
+        "Nombre", 
+        "Precio Bruto", 
+        "% Aplicado", 
+        "Precio Neto", 
+        "Distribuidor", 
+        "Stock", 
+        "Stock Mínimo"
+      ]];
+
+      // Agregar cada producto
       productosSnap.forEach(docSnap => {
         const d = docSnap.data();
         data.push([
           d.codigo || "",
           d.nombre || "",
-          typeof d.precio === "number" ? d.precio : "",
-          typeof d.stock === "number" ? d.stock : ""
+          typeof d.precioBruto === "number" ? d.precioBruto : "",
+          typeof d.porcentajeAplicado === "number" ? d.porcentajeAplicado : "",
+          typeof d.precioNeto === "number" ? d.precioNeto : "",
+          d.distribuidor || "",
+          typeof d.stock === "number" ? d.stock : "",
+          typeof d.stockMinimo === "number" ? d.stockMinimo : ""
         ]);
       });
 

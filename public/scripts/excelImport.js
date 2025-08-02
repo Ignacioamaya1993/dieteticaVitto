@@ -1,4 +1,3 @@
-// excelImport.js
 import { collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 import { db } from "./firebaseConfig.js";
 import { v4 as uuidv4 } from "https://cdn.skypack.dev/uuid";
@@ -48,7 +47,7 @@ export function inicializarImportadorExcel(cargarProductos) {
 
         let agregados = 0, yaExistian = 0, errores = 0;
 
-        // Cargar productos existentes de esa categoría
+        // Cargar productos existentes
         const existentesSnap = await getDocs(collection(db, "categorias", categoria, "productos"));
         const codigosExistentes = new Set();
         const nombresExistentes = new Set();
@@ -59,16 +58,35 @@ export function inicializarImportadorExcel(cargarProductos) {
           nombresExistentes.add((d.nombre || "").toLowerCase());
         });
 
+        // Validar encabezado
+        const encabezadoEsperado = ["Código", "Nombre", "Precio Bruto", "% Aplicado", "Precio Neto", "Distribuidor", "Stock", "Stock Mínimo"];
+        const encabezado = json[0]?.map(e => e?.toString().trim());
+        const valido = encabezadoEsperado.every((campo, i) => encabezado[i]?.toLowerCase() === campo.toLowerCase());
+        if (!valido) {
+          Swal.fire("Error", "El archivo Excel no tiene el formato esperado.", "error");
+          return;
+        }
+
         // Procesar filas
         for (let i = 1; i < json.length; i++) {
           const fila = json[i];
-          if (!fila || fila.length < 4) {
+          if (!fila || fila.length < 6) {
             errores++;
             continue;
           }
 
-          const [codigo, nombre, precio, stock] = fila;
-          if (!codigo || !nombre || isNaN(precio) || isNaN(stock)) {
+          const [
+            codigo,
+            nombre,
+            precioBruto,
+            porcentajeAplicado,
+            precioNeto,
+            distribuidor,
+            stock,
+            stockMinimo
+          ] = fila;
+
+          if (!codigo || !nombre || isNaN(precioBruto) || isNaN(porcentajeAplicado) || isNaN(stock)) {
             errores++;
             continue;
           }
@@ -81,12 +99,20 @@ export function inicializarImportadorExcel(cargarProductos) {
             continue;
           }
 
+          const netoCalculado = !isNaN(precioNeto)
+            ? parseFloat(precioNeto)
+            : +(parseFloat(precioBruto) * (1 + parseFloat(porcentajeAplicado) / 100)).toFixed(2);
+
           const id = uuidv4();
           await setDoc(doc(db, "categorias", categoria, "productos", id), {
             codigo: codigo.toString().trim(),
             nombre: nombre.toString().trim(),
-            precio: parseFloat(precio),
+            precioBruto: parseFloat(precioBruto),
+            porcentajeAplicado: parseFloat(porcentajeAplicado),
+            precioNeto: netoCalculado,
+            distribuidor: distribuidor?.toString().trim() || "",
             stock: parseInt(stock),
+            stockMinimo: isNaN(stockMinimo) ? 5 : parseInt(stockMinimo)
           });
 
           agregados++;
