@@ -223,6 +223,32 @@ tbody td[contenteditable="true"]:focus {
   filter: none;
 }
 
+.actions button.guardar {
+  background-color: #cccccc; /* gris claro por defecto */
+  color: #666;
+  font-weight: 600;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Cuando está habilitado */
+.actions button.guardar:not(:disabled) {
+  background-color: #2e8b57; /* verde oscuro */
+  color: white;
+}
+
+/* Hover solo si está habilitado */
+.actions button.guardar:not(:disabled):hover {
+  filter: brightness(1.2);
+  cursor: pointer;
+}
+
+/* Deshabilitado */
+.actions button.guardar:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  filter: none;
+}
+
 /* === PAGINACIÓN === */
 #paginationControls {
   display: flex;
